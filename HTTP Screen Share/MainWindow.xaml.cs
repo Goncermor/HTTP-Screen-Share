@@ -28,22 +28,20 @@ namespace HTTP_Screen_Share
             WIN32.DWM.DwmSetWindowAttribute(hWnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, ref Pref, sizeof(uint));
         }
 
-        Server.HTTPServer Srv = new Server.HTTPServer("127.0.0.1",8180, 10);
+        Server.HTTPServer Srv = new Server.HTTPServer("127.0.0.1",8180, 12);
 
         private void ServerStartButton_Click(object sender, RoutedEventArgs e)
         {
-            
             if (Srv.IsListening)
             {
                 _ = Srv.Stop();
                 this.ServerStartButton.Content = "Start Server";
-                
+
             } else
             {
                 Srv.Start();
                 this.ServerStartButton.Content = "Stop Server";
             }
-            
         }
     }
 }

@@ -17,7 +17,7 @@ namespace HTTP_Screen_Share.Server
         private SemaphoreSlim _semaphore;
         private int _workers;
         private List<Task> _workerList;
-        private Dictionary<string, Func<HttpListenerRequest, HttpListenerResponse, Task>> _routes = new Dictionary<string, Func<HttpListenerRequest, HttpListenerResponse, Task>>();
+        private Dictionary<string, Func<HttpListenerRequest, HttpListenerResponse, HttpListenerContext, Task>> _routes = new Dictionary<string, Func<HttpListenerRequest, HttpListenerResponse, HttpListenerContext, Task>>();
 
         #endregion
 
@@ -41,9 +41,9 @@ namespace HTTP_Screen_Share.Server
                 HTTPPath Attr = Method.GetCustomAttribute<HTTPPath>()!;
                 if (Attr != null)
                 {
-                    Func<HttpListenerRequest, HttpListenerResponse, Task> handler = async (req, res) =>
+                    Func<HttpListenerRequest, HttpListenerResponse, HttpListenerContext, Task> handler = async (req, res, ctx) =>
                     {
-                        await (Task)Method.Invoke(this, new object[] { req, res })!;
+                        await (Task)Method.Invoke(this, new object[] { req, res, ctx })!;
                     };
                     _routes.Add(Attr.Path, handler);
 
@@ -104,11 +104,12 @@ namespace HTTP_Screen_Share.Server
         {
             HttpListenerRequest Req = ctx.Request;
             HttpListenerResponse Res = ctx.Response;
+
             Res.ContentEncoding = Encoding.UTF8;
-            Func<HttpListenerRequest, HttpListenerResponse, Task>? RoutedFunction;
+            Func<HttpListenerRequest, HttpListenerResponse, HttpListenerContext, Task>? RoutedFunction;
             if (_routes.TryGetValue(Req.Url!.AbsolutePath.ToString(), out RoutedFunction))
             {
-                await RoutedFunction.Invoke(Req,Res);
+                await RoutedFunction.Invoke(Req,Res,ctx);
             } else
             {
                 // Show 404 Error
@@ -118,7 +119,6 @@ namespace HTTP_Screen_Share.Server
                 await Res.OutputStream.WriteAsync(data, 0, data.Length);
             }
 
-  
             Res.Close();
         }
 
