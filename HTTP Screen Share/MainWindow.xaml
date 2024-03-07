@@ -11,20 +11,15 @@
     ResizeMode="NoResize"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
-    <Button
-        x:Name="button_Copy"
-        Width="40"
-        Height="20"
-        Margin="0,0,430,14"
-        HorizontalAlignment="Right"
-        VerticalAlignment="Bottom"
-        Content="Button" />
-    <Button
-        x:Name="buttton"
-        Width="40"
-        Height="20"
-        Margin="0,0,430,14"
-        HorizontalAlignment="Right"
-        VerticalAlignment="Bottom"
-        Content="Button54" />
+    <Grid>
+        
+        
+        <Button Height="20" Margin="20,0,0,20" VerticalAlignment="Bottom" Content="Settings" HorizontalAlignment="Left" Width="60" />
+        <Button x:Name="ServerStartButton" Width="75" Height="20" Margin="0,0,20,20" HorizontalAlignment="Right" VerticalAlignment="Bottom" Content="Start Server" Click="ServerStartButton_Click" />
+        <Label x:Name="label" Content="HTTP Screen Share" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="205" FontSize="20"/>
+        <StackPanel  Margin="20,52,20,55">
+            <TextBlock x:Name="URL"><Hyperlink NavigateUri="https://goncermor.com"></Hyperlink></TextBlock>
+        </StackPanel>
+    </Grid>
+
 </Window>
