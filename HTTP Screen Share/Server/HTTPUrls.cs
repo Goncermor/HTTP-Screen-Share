@@ -1,7 +1,11 @@
 ﻿
 
+using System.Drawing.Imaging;
+using System.Drawing;
+using System.IO;
 using System.Net;
 using System.Text;
+using System.Windows;
 
 namespace HTTP_Screen_Share.Server
 {
@@ -9,44 +13,52 @@ namespace HTTP_Screen_Share.Server
     {
 
         [HTTPPath("/")]
-        public static async Task Index(HttpListenerRequest Req, HttpListenerResponse Res, HttpListenerContext ctx)
+        public static async Task Index(HttpListenerContext ctx)
         {
+            HttpListenerRequest Req = ctx.Request;
+            HttpListenerResponse Res = ctx.Response;
+
             byte[] data = Encoding.UTF8.GetBytes("Index");
-            
+
             Res.ContentType = "text/html";
             Res.ContentLength64 = data.LongLength;
             await Res.OutputStream.WriteAsync(data, 0, data.Length);
         }
 
-        [HTTPPath("/sla")]
-        public static async Task sla(HttpListenerRequest Req, HttpListenerResponse Res, HttpListenerContext ctx)
+
+        [HTTPPath("/img")]
+        public static async Task Img(HttpListenerContext ctx)
         {
-            byte[] data = Encoding.UTF8.GetBytes("Sla");
-            Res.ContentType = "text/html";
-            Res.ContentLength64 = data.LongLength;
-            await Res.OutputStream.WriteAsync(data, 0, data.Length);
-        }
+            HttpListenerRequest Req = ctx.Request;
+            HttpListenerResponse Res = ctx.Response;
 
-        [HTTPPath("/123")]
-        public static async Task s123(HttpListenerRequest Req, HttpListenerResponse Res, HttpListenerContext ctx)
-        {
-            byte[] data = Encoding.UTF8.GetBytes("23456789");
-            Res.ContentType = "text/html";
-            Res.ContentLength64 = data.LongLength;
+            int screenWidth = (int)SystemParameters.FullPrimaryScreenWidth;
+            int screenHeight = (int)SystemParameters.FullPrimaryScreenHeight;
+            using (Bitmap captureBitmap = new Bitmap(screenWidth, screenHeight))
+            {
+                using (Graphics g = Graphics.FromImage(captureBitmap))
+                {
+                    g.CopyFromScreen(0, 0, 0, 0, new System.Drawing.Size(screenWidth, screenHeight));
+                }
 
-            await Res.OutputStream.WriteAsync(data, 0, data.Length);
-        }
+                // Convert the bitmap to a byte array (adjust format as needed)
+                byte[] imageData;
+                using (MemoryStream memoryStream = new MemoryStream())
+                {
+                    captureBitmap.Save(memoryStream, ImageFormat.Jpeg);
+                    imageData = memoryStream.ToArray();
+                   
+                }
 
-        [HTTPPath("/gcm")]
-        public static async Task Gcm(HttpListenerRequest Req, HttpListenerResponse Res, HttpListenerContext ctx)
-        {
-            byte[] data = Encoding.UTF8.GetBytes("Goncermor");
-            Res.ContentType = "text/html";
-            Res.ContentLength64 = data.LongLength;
+               
 
-            await Res.OutputStream.WriteAsync(data, 0, data.Length);
+            }
+
+            ctx.Response.ContentType = "image/jpeg";
+            ctx.Response.ContentLength64 = imageData.LongLength;
+            await ctx.Response.OutputStream.WriteAsync(imageData, 0, imageData.Length);
+
         }
 
     }
-
 }

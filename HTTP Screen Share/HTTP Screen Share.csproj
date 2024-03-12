@@ -15,4 +15,8 @@
     <Description>Screen share your desktop over HTTP</Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="8.0.2" />
+  </ItemGroup>
+
 </Project>

@@ -12,15 +12,14 @@ namespace HTTP_Screen_Share.Server
     {
         #region Internal Objects
 
-        private HttpListener Listener = new HttpListener();
+        private readonly HttpListener Listener = new HttpListener();
         private CancellationTokenSource _cancellationSource;
-        private SemaphoreSlim _semaphore;
-        private int _workers;
-        private List<Task> _workerList;
-        private Dictionary<string, Func<HttpListenerRequest, HttpListenerResponse, HttpListenerContext, Task>> _routes = new Dictionary<string, Func<HttpListenerRequest, HttpListenerResponse, HttpListenerContext, Task>>();
+        private readonly SemaphoreSlim _semaphore;
+        private readonly int _workers;
+        private readonly List<Task> _workerList;
+        private readonly Dictionary<string, Func<HttpListenerContext, Task>> _routes = new Dictionary<string, Func<HttpListenerContext, Task>>();
 
         #endregion
-
 
         #region Public Objects
         public string URL => Listener.Prefixes.First();
@@ -41,9 +40,9 @@ namespace HTTP_Screen_Share.Server
                 HTTPPath Attr = Method.GetCustomAttribute<HTTPPath>()!;
                 if (Attr != null)
                 {
-                    Func<HttpListenerRequest, HttpListenerResponse, HttpListenerContext, Task> handler = async (req, res, ctx) =>
+                    Func<HttpListenerContext, Task> handler = async (ctx) =>
                     {
-                        await (Task)Method.Invoke(this, new object[] { req, res, ctx })!;
+                        await (Task)Method.Invoke(this, new object[] { ctx })!;
                     };
                     _routes.Add(Attr.Path, handler);
 
@@ -106,10 +105,10 @@ namespace HTTP_Screen_Share.Server
             HttpListenerResponse Res = ctx.Response;
 
             Res.ContentEncoding = Encoding.UTF8;
-            Func<HttpListenerRequest, HttpListenerResponse, HttpListenerContext, Task>? RoutedFunction;
+            Func<HttpListenerContext, Task>? RoutedFunction;
             if (_routes.TryGetValue(Req.Url!.AbsolutePath.ToString(), out RoutedFunction))
             {
-                await RoutedFunction.Invoke(Req,Res,ctx);
+                await RoutedFunction.Invoke(ctx);
             } else
             {
                 // Show 404 Error
